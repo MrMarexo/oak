@@ -38,7 +38,7 @@ export default function RootLayout({
             </div>
           </header>
           <main className="flex flex-1 justify-center px-4">
-            <div className="max-w-[1200px] w-full my-10">{children}</div>
+            <div className="max-w-[1200px] w-full my-5">{children}</div>
           </main>
           <footer className="bottom-0 flex justify-center border-t-[1px] px-4 bg-background">
             <div className="max-w-[1200px] w-full flex justify-center items-center py-1 gap-20">

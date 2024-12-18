@@ -14,25 +14,199 @@ datasource db {
 }
 
 enum GameStatus {
-  Not_initialized
+  Not_Initialized
   Playing
   Ended
 }
 
-model Player {
+enum GamePhase {
+ Draw 
+ Buying
+ Card_Exchange
+}
+
+enum CardColor {
+  Red
+  Black
+}
+
+enum CardSuit {
+  Spade
+  Heart
+  Diamond
+  Club
+}
+
+enum CardCurrencyType {
+  Two
+  Three
+  Four
+  Five
+  Six
+  Seven
+  Eight
+  Nine
+  Ten
+  Joker
+}
+
+enum CardCharacterType {
+  King
+  Queen
+  Jack
+  
+}
+
+enum CardAceType {
+  Ace
+}
+
+enum CardClass {
+  Currency
+  Character
+  Ace
+}
+
+enum CardEffect {
+  Draw2
+  StealOne
+  BuyOneExtra
+  StealFromHand
+}
+
+model CurrencyCard {
   id        String   @id @default(cuid())
+  color   CardColor
+  suit    CardSuit?
+  type    CardCurrencyType
+  value Int?
+
+  playerStates      PlayerStatePrivate[]
+  gameStatesPrivateForDeck GameStatePrivate[] @relation(name: "CurrencyCardsDeck")
+  gameStatesPrivateForDiscard GameStatePrivate[] @relation(name: "CurrencyCardsDiscard")
+
+  // currencyCardDeck CurrencyCardDeck[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CharacterCard {
+  id        String   @id @default(cuid())
+  color   CardColor
+  suit    CardSuit
+  type    CardCharacterType
+  price  Int
+  effect CardEffect
+
+  players      Player[]
+  games         Game[]
+  gameStatesPrivate GameStatePrivate[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AceCard {
+  id        String   @id @default(cuid())
+  color   CardColor
+  suit    CardSuit
+  type    CardAceType @default(Ace)
+  effect CardEffect @default(StealFromHand)
+
+  players      Player[]
+  games         Game[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PlayerStatePrivate {
+  id        String   @id @default(cuid())
+  player    Player @relation(fields: [playerId], references: [privateId])
+  playerId  String @unique
+
+  currencyCardsInHand CurrencyCard[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+}
+
+model Player {
+  id          String   @id @default(cuid()) // Public player ID (safe to expose)
+  privateId    String   @unique @default(uuid()) // Private identifier for the  private state data
   name      String
-  game      Game   @relation(fields: [gameId], references: [id])
-  gameId    String
+
+
+  gameForPlayers      Game   @relation(name: "Players", fields: [gameIdForPlayers], references: [id])
+  gameForCurrentPlayer     Game?   @relation(name: "CurrentPlayer", fields: [gameIdForCurrentPlayer], references: [id])
+  gameIdForPlayers    String 
+  gameIdForCurrentPlayer    String? @unique
+
+  isHost    Boolean @default(false)
+
+  playerStatePrivate     PlayerStatePrivate?
+
+  numberOfCurrencyCardsInHand Int @default(0)
+  builtCharacterCards CharacterCard[]
+
+
+  builtAces AceCard[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Game {
   id        String   @id @default(cuid())
+  privateId    String   @unique @default(uuid())
+
   title     String
-  players   Player[]
-  gameStatus     GameStatus @default(Not_initialized)
+
+  gameStatePrivate GameStatePrivate?
+
+  players   Player[] @relation(name: "Players")
+  currentPlayer  Player? @relation(name: "CurrentPlayer")
+
+  gameStatus     GameStatus @default(Not_Initialized)
+  currentTurn    Int?
+  currentPhase  GamePhase?
+
+  numberOfCurrencyCardsLeft Int @default(0)
+  numberOfCharacterCardsLeft Int @default(0)
+  aceCardsAvailable AceCard[]
+  characterCardsAvailable CharacterCard[]
+
+  //test
+  // currencyCardDeck CurrencyCardDeck[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// model CurrencyCardDeck {
+//   id        String   @id @default(cuid())
+//   game    Game   @relation(fields: [gameIdPrivate], references: [privateId])
+//   gameIdPrivate    String
+
+//   currencyCard CurrencyCard @relation(fields: [currencyCardId], references: [id])
+//   currencyCardId String
+
+
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+// }
+
+model GameStatePrivate {
+  id        String   @id @default(cuid())
+  game      Game @relation(fields: [gameId], references: [id])
+  gameId    String @unique
+
+  currencyCardsDeck CurrencyCard[] @relation(name: "CurrencyCardsDeck")
+  currencyCardsDiscard CurrencyCard[] @relation(name: "CurrencyCardsDiscard")
+  characterCardsDeck CharacterCard[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

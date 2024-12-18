@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 
-export const RoomForm = ({ gameId }: { gameId?: string }) => {
+export const GameForm = ({ gameId }: { gameId?: string }) => {
   const [playerName, setPlayerName] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -25,7 +25,7 @@ export const RoomForm = ({ gameId }: { gameId?: string }) => {
   };
   return (
     <form
-      className="mt-20 flex flex-col sm:max-w-[400px] gap-3"
+      className="flex flex-col sm:max-w-[400px] gap-3"
       onSubmit={handleSubmit}
     >
       <Input

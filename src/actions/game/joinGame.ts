@@ -21,8 +21,10 @@ export const joinGame = async ({
     const found = await prisma.player.findUnique({
       where: {
         id: existingPlayerId.value,
-        game: {
-          ended: false,
+        NOT: {
+          gameForPlayers: {
+            gameStatus: "Ended",
+          },
         },
       },
     });
@@ -38,14 +40,17 @@ export const joinGame = async ({
     playerName = "Player";
   }
 
-  const { id: playerId } = await prisma.player.create({
+  const { privateId } = await prisma.player.create({
     data: {
       name: playerName,
-      gameId: gameId,
+      gameForPlayers: { connect: { id: gameId } },
+      playerStatePrivate: {
+        create: {},
+      },
     },
   });
 
-  cookieStore.set("playerId", playerId, {
+  cookieStore.set("playerId", privateId, {
     httpOnly: true,
     secure: true,
     path: "/",

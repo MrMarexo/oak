@@ -1,4 +1,4 @@
-import { RoomForm } from "@/scenes/home";
+import { GameForm } from "@/app/_components/forms/GameForm";
 import prisma from "@/lib/db";
 import Link from "next/link";
 
@@ -8,7 +8,7 @@ export default async function Home() {
   return (
     <div>
       <h2>Games:</h2>
-      <div className="flex gap-2">
+      <div className="flex gap-2 mb-12">
         {games.length ? (
           games.map((game) => (
             <Link
@@ -23,7 +23,7 @@ export default async function Home() {
           <p>No games</p>
         )}
       </div>
-      <RoomForm />
+      <GameForm />
     </div>
   );
 }
