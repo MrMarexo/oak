@@ -142,6 +142,8 @@ export const LiveGame = ({
           <Dealer
             availableCharacters={game.characterCardsAvailable}
             currencyCardsInHand={playerPrivateState.currencyCardsInHand}
+            players={game.players}
+            playerId={player.id}
           />
         </>
       )}

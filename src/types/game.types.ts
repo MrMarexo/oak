@@ -98,6 +98,8 @@ export type Game = Prisma.GameGetPayload<{
   };
 }>;
 
+export type Players = Game["players"];
+
 export type CharacterCard = Game["characterCardsAvailable"][number];
 export type AceCard = Game["aceCardsAvailable"][number];
 export type CurrencyCard = PlayerStatePrivate["currencyCardsInHand"][number];

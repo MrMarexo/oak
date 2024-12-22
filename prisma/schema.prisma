@@ -20,9 +20,9 @@ enum GameStatus {
 }
 
 enum GamePhase {
- Draw 
- Buying
- Card_Exchange
+  Draw
+  Buying
+  Card_Exchange
 }
 
 enum CardColor {
@@ -54,7 +54,6 @@ enum CardCharacterType {
   King
   Queen
   Jack
-  
 }
 
 enum CardAceType {
@@ -75,15 +74,15 @@ enum CardEffect {
 }
 
 model CurrencyCard {
-  id        String   @id @default(cuid())
-  color   CardColor
-  suit    CardSuit?
-  type    CardCurrencyType
+  id    String           @id @default(cuid())
+  color CardColor
+  suit  CardSuit?
+  type  CardCurrencyType
   value Int?
 
-  playerStates      PlayerStatePrivate[]
-  gameStatesPrivateForDeck GameStatePrivate[] @relation(name: "CurrencyCardsDeck")
-  gameStatesPrivateForDiscard GameStatePrivate[] @relation(name: "CurrencyCardsDiscard")
+  playerStates                PlayerStatePrivate[]
+  gameStatesPrivateForDeck    GameStatePrivate[]   @relation(name: "CurrencyCardsDeck")
+  gameStatesPrivateForDiscard GameStatePrivate[]   @relation(name: "CurrencyCardsDiscard")
 
   // currencyCardDeck CurrencyCardDeck[]
 
@@ -92,15 +91,15 @@ model CurrencyCard {
 }
 
 model CharacterCard {
-  id        String   @id @default(cuid())
-  color   CardColor
-  suit    CardSuit
-  type    CardCharacterType
+  id     String            @id @default(cuid())
+  color  CardColor
+  suit   CardSuit
+  type   CardCharacterType
   price  Int
   effect CardEffect
 
-  players      Player[]
-  games         Game[]
+  players           Player[]
+  games             Game[]
   gameStatesPrivate GameStatePrivate[]
 
   createdAt DateTime @default(now())
@@ -108,49 +107,46 @@ model CharacterCard {
 }
 
 model AceCard {
-  id        String   @id @default(cuid())
-  color   CardColor
-  suit    CardSuit
-  type    CardAceType @default(Ace)
-  effect CardEffect @default(StealFromHand)
+  id     String      @id @default(cuid())
+  color  CardColor
+  suit   CardSuit
+  type   CardAceType @default(Ace)
+  effect CardEffect  @default(StealFromHand)
 
-  players      Player[]
-  games         Game[]
+  players Player[]
+  games   Game[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model PlayerStatePrivate {
-  id        String   @id @default(cuid())
-  player    Player @relation(fields: [playerId], references: [privateId])
-  playerId  String @unique
+  id       String @id @default(cuid())
+  player   Player @relation(fields: [playerId], references: [privateId])
+  playerId String @unique
 
   currencyCardsInHand CurrencyCard[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
 }
 
 model Player {
-  id          String   @id @default(cuid()) // Public player ID (safe to expose)
-  privateId    String   @unique @default(uuid()) // Private identifier for the  private state data
+  id        String @id @default(cuid()) // Public player ID (safe to expose)
+  privateId String @unique @default(uuid()) // Private identifier for the  private state data
   name      String
 
+  gameForPlayers         Game    @relation(name: "Players", fields: [gameIdForPlayers], references: [id])
+  gameForCurrentPlayer   Game?   @relation(name: "CurrentPlayer", fields: [gameIdForCurrentPlayer], references: [id])
+  gameIdForPlayers       String
+  gameIdForCurrentPlayer String? @unique
 
-  gameForPlayers      Game   @relation(name: "Players", fields: [gameIdForPlayers], references: [id])
-  gameForCurrentPlayer     Game?   @relation(name: "CurrentPlayer", fields: [gameIdForCurrentPlayer], references: [id])
-  gameIdForPlayers    String 
-  gameIdForCurrentPlayer    String? @unique
+  isHost Boolean @default(false)
 
-  isHost    Boolean @default(false)
+  playerStatePrivate PlayerStatePrivate?
 
-  playerStatePrivate     PlayerStatePrivate?
-
-  numberOfCurrencyCardsInHand Int @default(0)
-  builtCharacterCards CharacterCard[]
-
+  numberOfCurrencyCardsInHand Int             @default(0)
+  builtCharacterCards         CharacterCard[]
 
   builtAces AceCard[]
 
@@ -159,24 +155,24 @@ model Player {
 }
 
 model Game {
-  id        String   @id @default(cuid())
-  privateId    String   @unique @default(uuid())
+  id        String @id @default(cuid())
+  privateId String @unique @default(uuid())
 
-  title     String
+  title String
 
   gameStatePrivate GameStatePrivate?
 
-  players   Player[] @relation(name: "Players")
-  currentPlayer  Player? @relation(name: "CurrentPlayer")
+  players       Player[] @relation(name: "Players")
+  currentPlayer Player?  @relation(name: "CurrentPlayer")
 
-  gameStatus     GameStatus @default(Not_Initialized)
-  currentTurn    Int?
-  currentPhase  GamePhase?
+  gameStatus   GameStatus @default(Not_Initialized)
+  currentTurn  Int?
+  currentPhase GamePhase?
 
-  numberOfCurrencyCardsLeft Int @default(0)
-  numberOfCharacterCardsLeft Int @default(0)
-  aceCardsAvailable AceCard[]
-  characterCardsAvailable CharacterCard[]
+  numberOfCurrencyCardsLeft  Int             @default(0)
+  numberOfCharacterCardsLeft Int             @default(0)
+  aceCardsAvailable          AceCard[]
+  characterCardsAvailable    CharacterCard[]
 
   //test
   // currencyCardDeck CurrencyCardDeck[]
@@ -193,19 +189,18 @@ model Game {
 //   currencyCard CurrencyCard @relation(fields: [currencyCardId], references: [id])
 //   currencyCardId String
 
-
 //   createdAt DateTime @default(now())
 //   updatedAt DateTime @updatedAt
 // }
 
 model GameStatePrivate {
-  id        String   @id @default(cuid())
-  game      Game @relation(fields: [gameId], references: [id])
-  gameId    String @unique
+  id     String @id @default(cuid())
+  game   Game   @relation(fields: [gameId], references: [id])
+  gameId String @unique
 
-  currencyCardsDeck CurrencyCard[] @relation(name: "CurrencyCardsDeck")
-  currencyCardsDiscard CurrencyCard[] @relation(name: "CurrencyCardsDiscard")
-  characterCardsDeck CharacterCard[]
+  currencyCardsDeck    CurrencyCard[]  @relation(name: "CurrencyCardsDeck")
+  currencyCardsDiscard CurrencyCard[]  @relation(name: "CurrencyCardsDiscard")
+  characterCardsDeck   CharacterCard[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
