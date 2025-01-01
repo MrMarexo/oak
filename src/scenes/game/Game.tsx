@@ -16,6 +16,7 @@ import { getGameGeneralChannel, getGamePlayerChannel } from "@/helpers";
 import { GAME_GENERAL_EVENTS, GAME_PLAYER_EVENTS } from "@/consts";
 import { startGame } from "@/actions/game/startGame";
 import { drawCard } from "@/actions/game/drawCard";
+import { sortHandCards } from "@/actions/game/sortHandCards";
 
 export const LiveGame = ({
   gameId,
@@ -122,6 +123,21 @@ export const LiveGame = ({
     }
   };
 
+  const sortCurrencyCardsHandle = async (order: string[]) => {
+    try {
+      await sortHandCards({
+        newCardOrder: order,
+        playerPrivateId: player.privateId,
+      });
+
+      console.log("Cards sorted");
+
+      return;
+    } catch {
+      alert("Error sorting cards");
+    }
+  };
+
   if (!game) {
     return <div>Loading...</div>;
   }
@@ -144,6 +160,7 @@ export const LiveGame = ({
             currencyCardsInHand={playerPrivateState.currencyCardsInHand}
             players={game.players}
             playerId={player.id}
+            saveCardOrder={sortCurrencyCardsHandle}
           />
         </>
       )}

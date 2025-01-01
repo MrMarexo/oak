@@ -20,6 +20,7 @@ export type PlayerStatePrivate = Prisma.PlayerStatePrivateGetPayload<{
         value: true;
       };
     };
+    currencyCardsOrder: true;
   };
 }>;
 

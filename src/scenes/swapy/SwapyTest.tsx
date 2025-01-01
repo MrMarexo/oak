@@ -5,23 +5,15 @@ import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import { useEffect, useState } from "react";
 import { Draggable } from "./Draggable";
 import { Droppable } from "./Droppable";
-import { SwapyElement } from "./SwapyElement";
 import { CurrencyCard } from "@/types/game.types";
-import { Demo, Item } from "./Demo";
 import { SlotItemMapArray } from "swapy";
-import { DemoCards } from "./DemoCards";
 
 export const SwapyTest = ({ allCards }: { allCards: CurrencyCard[] }) => {
   const [deck, setDeck] = useState<CurrencyCard[]>(allCards);
   const [cards, setCards] = useState<CurrencyCard[]>([]);
   const [state, setState] = useState<"sort" | "exchange">("sort");
 
-  const [items, setItems] = useState<Item[]>([
-    { id: "1", title: "Item 1" },
-    { id: "2", title: "Item 2" },
-    { id: "3", title: "Item 3" },
-    { id: "4", title: "Item 4" },
-  ]);
+  const [isDropped, setIsDropped] = useState(false);
 
   useEffect(() => {
     const newCards = deck.slice(0, 5);
@@ -50,6 +42,12 @@ export const SwapyTest = ({ allCards }: { allCards: CurrencyCard[] }) => {
 
   const removeCard = (id: CurrencyCard["id"]) => {
     setCards((prev) => prev.filter((card) => card.id !== id));
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    if (event.over && event.over.id === "droppable") {
+      setIsDropped(true);
+    }
   };
 
   return (
@@ -81,29 +79,31 @@ export const SwapyTest = ({ allCards }: { allCards: CurrencyCard[] }) => {
           Exchange card
         </Button>
       </div>
-      {/* <DndContext onDragEnd={handleDragEnd}> */}
-      {/* <Droppable>{isDropped ? <div>Dropped</div> : "Drop here"}</Droppable> */}
-      <div className="mt-40" />
+      <DndContext onDragEnd={handleDragEnd}>
+        <Droppable>{isDropped ? <div>Dropped</div> : "Drop here"}</Droppable>
+        <div className="mt-40" />
 
-      {state === "sort" ? (
+        {/* {state === "sort" ? (
         <SwapyElement
           cards={cards}
           removeCard={removeCard}
           setItemMap={(itemMap) => handleOrderChange(itemMap)}
         />
       ) : (
+        <div className="flex gap-3"> */}
         <div className="flex gap-3">
           {cards.map((card) => (
             <Draggable key={card.id} id={card.id}>
-              <div className="h-20 w-16 border-2 p-2 flex items-center justify-center">
+              <div className="h-20 w-16 border-2 p-2 flex items-center justify-center bg-white">
                 <div>{card.suit}</div>
                 <div>{card.value}</div>
               </div>
             </Draggable>
           ))}
         </div>
-      )}
-      {/* </DndContext>
+        {/* </div>
+      )} */}
+      </DndContext>
       {/* <Demo items={items} setItems={setItems} removeItems={} /> */}
     </>
   );

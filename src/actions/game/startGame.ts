@@ -71,12 +71,14 @@ export const startGame = async (gameId: string) => {
             currencyCardsInHand: {
               set: currencyCardsInPayersHand.map(({ id }) => ({ id })),
             },
+            currencyCardsOrder: currencyCardsInPayersHand.map(({ id }) => id),
           },
         },
       },
     });
     const playerPrivateObj: PlayerStatePrivate = {
       currencyCardsInHand: currencyCardsInPayersHand,
+      currencyCardsOrder: [],
     };
     pusherServer.trigger(
       getGamePlayerChannel(gameId, privateId),

@@ -126,6 +126,7 @@ model PlayerStatePrivate {
   playerId String @unique
 
   currencyCardsInHand CurrencyCard[]
+  currencyCardsOrder  String[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

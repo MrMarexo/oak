@@ -3,6 +3,7 @@ import { GameForm } from "@/app/_components/forms/GameForm";
 import prisma from "@/lib/db";
 import { cookies } from "next/headers";
 import type { Game, PlayerName, PlayerStatePrivate } from "@/types/game.types";
+import { orderCurrencyCards } from "@/helpers";
 
 const Page = async ({ params }: { params: Promise<{ gameId: string }> }) => {
   const { gameId } = await params;
@@ -103,8 +104,19 @@ const Page = async ({ params }: { params: Promise<{ gameId: string }> }) => {
             value: true,
           },
         },
+        currencyCardsOrder: true,
       },
     });
+
+    if (playerStatePrivate) {
+      playerStatePrivate = {
+        ...playerStatePrivate,
+        currencyCardsInHand: orderCurrencyCards(
+          playerStatePrivate.currencyCardsInHand,
+          playerStatePrivate.currencyCardsOrder
+        ),
+      };
+    }
   }
 
   return (

@@ -7,7 +7,11 @@ import {
   DrawCardPlayerPrivateResponse,
 } from "@/types/game.types";
 import { get } from "http";
-import { getGameGeneralChannel, getGamePlayerChannel } from "@/helpers";
+import {
+  getGameGeneralChannel,
+  getGamePlayerChannel,
+  orderCurrencyCards,
+} from "@/helpers";
 import { GAME_GENERAL_EVENTS, GAME_PLAYER_EVENTS } from "@/consts";
 
 export const drawCard = async (gameId: string, playerPrivateId: string) => {
@@ -64,7 +68,7 @@ export const drawCard = async (gameId: string, playerPrivateId: string) => {
     },
   });
 
-  const { playerStatePrivate, id: playerId } = await prisma.player.update({
+  const player = await prisma.player.update({
     where: {
       privateId: playerPrivateId,
     },
@@ -79,24 +83,32 @@ export const drawCard = async (gameId: string, playerPrivateId: string) => {
               id: res.currencyCardsDeck[0].id,
             },
           },
+          currencyCardsOrder: {
+            push: res.currencyCardsDeck[0].id,
+          },
         },
       },
     },
     select: {
       id: true,
-      playerStatePrivate: {
+    },
+  });
+
+  const playerStatePrivate = await prisma.playerStatePrivate.findUnique({
+    where: {
+      playerId: playerPrivateId,
+    },
+    select: {
+      currencyCardsInHand: {
         select: {
-          currencyCardsInHand: {
-            select: {
-              id: true,
-              suit: true,
-              color: true,
-              type: true,
-              value: true,
-            },
-          },
+          id: true,
+          suit: true,
+          color: true,
+          type: true,
+          value: true,
         },
       },
+      currencyCardsOrder: true,
     },
   });
 
@@ -109,13 +121,19 @@ export const drawCard = async (gameId: string, playerPrivateId: string) => {
   }
 
   const playerObj: DrawCardPlayerPrivateResponse = {
-    currencyCardsInHand: playerStatePrivate.currencyCardsInHand,
+    currencyCardsInHand: orderCurrencyCards(
+      playerStatePrivate.currencyCardsInHand,
+      playerStatePrivate.currencyCardsOrder
+    ),
+    currencyCardsOrder: playerStatePrivate.currencyCardsOrder,
   };
+
+  console.log("PLAYER OBJ DRAW CARD", playerStatePrivate);
 
   const gameObj: DrawCardGamePublicResponse = {
     currentPhase: game.currentPhase,
     numberOfCurrencyCardsLeft: game.numberOfCurrencyCardsLeft,
-    playerIdWithExtraCard: playerId,
+    playerIdWithExtraCard: player.id,
   };
 
   await pusherServer.trigger(

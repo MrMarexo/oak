@@ -1,4 +1,4 @@
-import { AnyCard } from "./types/game.types";
+import { AnyCard, CurrencyCard } from "./types/game.types";
 
 export const getGameGeneralChannel = (gameId: string) => `game-${gameId}`;
 
@@ -53,4 +53,26 @@ export const getCardType = (type: AnyCard["type"]) => {
     case "Ace":
       return "Ace";
   }
+};
+
+export const orderCurrencyCards = (cards: CurrencyCard[], order: string[]) => {
+  if (order.length === 0) {
+    return cards;
+  }
+  let error = false;
+  const ordered = order.map((id) => {
+    const found = cards.find((card) => card.id === id);
+
+    if (!found) {
+      error = true;
+      return {} as CurrencyCard;
+    }
+    return found;
+  });
+  if (error) {
+    console.error("Card order mismatch");
+    return cards;
+  }
+
+  return ordered;
 };
