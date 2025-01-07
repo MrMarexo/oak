@@ -10,4 +10,4 @@ export const GAME_PLAYER_EVENTS = {
   drawCard: "draw-card",
 };
 
-export const JOKER_TYPE: CurrencyCard["type"] = "Eight";
+export const JOKER_TYPE: CurrencyCard["type"] = "Joker";

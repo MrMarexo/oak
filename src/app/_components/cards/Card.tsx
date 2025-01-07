@@ -22,7 +22,7 @@ export const Card = ({
   }
   return (
     <div
-      className={`${size === "sm" ? "h-20 w-14" : "h-28 w-20"} border-[2px] flex rounded-md flex-col justify-center items-center border-foreground bg-background relative`}
+      className={`${size === "sm" ? "h-20 w-14" : "h-28 w-20"} border-[1px] flex rounded-md flex-col justify-center items-center border-foreground bg-background relative ${isSelected ? "shadow-card-lg" : "shadow-card-sm"}`}
     >
       {card ? (
         <>
@@ -67,12 +67,7 @@ export const Card = ({
         />
       )}
       {isSelected && (
-        <div className="absolute inset-0 border-4 border-orange-300 rounded-sm" />
-      )}
-      {jokerAlternative && card?.type === JOKER_TYPE && (
-        <div className="absolute top-0 right-0 opacity-50">
-          <Card card={jokerAlternative} />
-        </div>
+        <div className="absolute inset-0 border-8 border-orange-300 opacity-20 rounded-sm" />
       )}
     </div>
   );

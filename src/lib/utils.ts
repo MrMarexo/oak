@@ -13,3 +13,7 @@ export const getClientSideCookie = (name: string): string | undefined => {
 
   return cookieValue;
 };
+
+export const isEmtpyObject = (obj: Record<string, unknown>) => {
+  return Object.keys(obj).length === 0;
+};

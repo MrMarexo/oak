@@ -57,6 +57,11 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      boxShadow: {
+        "card-sm": "0px 2px 8px 0px rgba(99, 99, 99, 0.3)",
+        "card-lg":
+          "rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px",
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],

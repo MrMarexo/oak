@@ -1,4 +1,13 @@
-import { Prisma } from "@prisma/client";
+import { $Enums, Prisma } from "@prisma/client";
+
+export type SuitCurrencyGroups = Record<$Enums.CardSuit, CurrencyCard[]>;
+
+export type JokerAlternative = {
+  jokerCard: CurrencyCard;
+  alternativeCard: CurrencyCard;
+};
+
+export type CardSuit = keyof SuitCurrencyGroups;
 
 export type PlayerName = Prisma.PlayerGetPayload<{
   select: {

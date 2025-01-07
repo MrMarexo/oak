@@ -1,6 +1,12 @@
 "use client";
 
-import { CharacterCard, CurrencyCard, Players } from "@/types/game.types";
+import {
+  CharacterCard,
+  CurrencyCard,
+  JokerAlternative,
+  Players,
+  SuitCurrencyGroups,
+} from "@/types/game.types";
 import { SortableItem } from "../sort/SortableItem";
 
 import {
@@ -18,14 +24,16 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Fragment, use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { IconCheckmark } from "../icons/IconCheckmark";
 import { DrawerComponent } from "../DrawerComponent";
 import { IconJokerAction } from "../icons/IconJokerAction";
 import { Card } from "./Card";
-import { JokerCardsSelect } from "./JokerCardsSelect";
+import { SelectFromCards } from "./SelectFromCards";
 import { JOKER_TYPE } from "@/consts";
+import { calculateStraights, sortCardsByValue } from "@/helpers";
+import { getSuitCurrencyGroups } from "../../../helpers";
+import { BuyVisualisation } from "@/scenes/test/BuyVisualisation";
 
 export const Dealer = ({
   availableCharacters,
@@ -43,7 +51,8 @@ export const Dealer = ({
   // setAvailableCharacters: (characters: CharacterCard[]) => void;
 }) => {
   const [selectedCurrencyTotal, setSelectedCurrencyTotal] = useState(0);
-  const [isBuying, setIsBuying] = useState(false);
+
+  const [isSelectingCardsToBuy, setIsSelectingCardsToBuy] = useState(false);
   const [selectedCurrencyCards, setSelectedCurrencyCards] = useState<
     CurrencyCard[]
   >([]);
@@ -51,10 +60,7 @@ export const Dealer = ({
     useState<CurrencyCard[]>(currencyCardsInHand);
 
   const [jokerAlternatives, setJokerAlternatives] = useState<
-    {
-      jokerCard: CurrencyCard;
-      alternativeCard: CurrencyCard;
-    }[]
+    JokerAlternative[]
   >([]);
 
   useEffect(() => {
@@ -76,22 +82,38 @@ export const Dealer = ({
 
   useEffect(() => {
     let total = 0;
-    selectedCurrencyCards.forEach((card) => {
+    const buyingCards: SuitCurrencyGroups = {
+      Heart: [],
+      Diamond: [],
+      Club: [],
+      Spade: [],
+    };
+    currencyCardsInHand.forEach((card) => {
       if (card.type === JOKER_TYPE) {
         const alternative = jokerAlternatives.find(
           (alt) => alt.jokerCard.id === card.id
         );
-        if (alternative && alternative.alternativeCard.value) {
-          total += alternative.alternativeCard.value;
+        if (alternative && alternative.alternativeCard.suit) {
+          buyingCards[alternative.alternativeCard.suit].push(
+            alternative.alternativeCard
+          );
           return;
         }
       }
-      const value = card.value ?? 10;
-      total += value;
+      if (card.suit) {
+        buyingCards[card.suit].push(card);
+      }
+    });
+
+    Object.entries(buyingCards).forEach(([suit, cards]) => {
+      const sortedCards = sortCardsByValue(cards);
+
+      const straights = calculateStraights(getSuitCurrencyGroups(sortedCards));
+      console.log(`straights ${suit}`, straights);
     });
 
     setSelectedCurrencyTotal(total);
-  }, [selectedCurrencyCards, jokerAlternatives]);
+  }, [currencyCardsInHand, jokerAlternatives]);
 
   const handleJokerAlternative = (
     jokerCard: CurrencyCard,
@@ -182,8 +204,24 @@ export const Dealer = ({
             </div>
           </div>
         </div>
-        <div className="mt-96">
+        <div className="mt-20">
           <p>My hand</p>
+          <div className="flex gap-3">
+            <Button
+              variant={isSelectingCardsToBuy ? "outline" : "default"}
+              onClick={() => setIsSelectingCardsToBuy(true)}
+              className="my-2 w-48"
+            >
+              {isSelectingCardsToBuy ? "Selecting cards to buy" : "Buy cards"}
+            </Button>
+            <Button
+              variant={!isSelectingCardsToBuy ? "outline" : "default"}
+              onClick={() => setIsSelectingCardsToBuy(false)}
+              className="my-2 w-48"
+            >
+              {isSelectingCardsToBuy ? "Sort hand" : "Sorting hand"}
+            </Button>
+          </div>
           <DndContext
             id={"dnd-kit-sort"}
             sensors={sensors}
@@ -204,7 +242,7 @@ export const Dealer = ({
                       : null;
                   const isJoker = card.type === JOKER_TYPE;
 
-                  if (isBuying) {
+                  if (isSelectingCardsToBuy) {
                     return (
                       <div
                         className="flex flex-col items-center gap-1"
@@ -226,7 +264,7 @@ export const Dealer = ({
                             }
                             title="Select card"
                           >
-                            <JokerCardsSelect
+                            <SelectFromCards
                               color={card.color}
                               onCardSelect={(alternative) =>
                                 handleJokerAlternative(card, alternative)
@@ -246,6 +284,7 @@ export const Dealer = ({
                         <Card
                           card={card}
                           jokerAlternative={jokerAlternative?.alternativeCard}
+                          isSelected={selectedCurrencyCards.includes(card)}
                         />
                       </div>
                     </SortableItem>
@@ -254,20 +293,7 @@ export const Dealer = ({
               </div>
             </SortableContext>
           </DndContext>
-          <div className="flex gap-3 mt-2">
-            <Button
-              variant="outline"
-              onClick={() => setIsBuying((prev) => !prev)}
-            >
-              {isBuying ? (
-                <IconCheckmark fill="foreground" />
-              ) : (
-                <IconCheckmark fill="background" />
-              )}
-              Select cards to buy
-            </Button>
-            <div>Calculated value: {selectedCurrencyTotal}</div>
-          </div>
+          <BuyVisualisation selectedCards={selectedCurrencyCards} />
         </div>
       </div>
       <div>

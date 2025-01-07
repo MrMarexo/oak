@@ -3,7 +3,7 @@
 import { CurrencyCard } from "@/types/game.types";
 import prisma from "@/lib/db";
 
-export const getAllCardsOfAColor = async (color: CurrencyCard["color"]) => {
+export const getAllCardsOfAColor = async (color?: CurrencyCard["color"]) => {
   const allCardsTwice = await prisma.currencyCard.findMany({
     where: {
       color,

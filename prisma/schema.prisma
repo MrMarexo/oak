@@ -137,7 +137,7 @@ model Player {
   privateId String @unique @default(uuid()) // Private identifier for the  private state data
   name      String
 
-  gameForPlayers         Game    @relation(name: "Players", fields: [gameIdForPlayers], references: [id])
+  gameForPlayers         Game    @relation(name: "Players", fields: [gameIdForPlayers], references: [id], onDelete: Cascade)
   gameForCurrentPlayer   Game?   @relation(name: "CurrentPlayer", fields: [gameIdForCurrentPlayer], references: [id])
   gameIdForPlayers       String
   gameIdForCurrentPlayer String? @unique

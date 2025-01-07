@@ -9,16 +9,22 @@ export const pusherServer = new PusherServer({
   useTLS: true,
 });
 
-export const pusherClient = new PusherClient(
-  process.env.NEXT_PUBLIC_PUSHER_KEY!,
-  {
+declare global {
+  var pusherClient: PusherClient | undefined;
+}
+
+if (!global.pusherClient) {
+  global.pusherClient = new PusherClient(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
     cluster: "eu",
-    // authEndpoint: "/api/pusher-auth",
-    // authTransport: "ajax",
-    // auth: {
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    // },
-  }
-);
+  });
+}
+
+export const pusherClient = global.pusherClient;
+
+// authEndpoint: "/api/pusher-auth",
+// authTransport: "ajax",
+// auth: {
+//   headers: {
+//     "Content-Type": "application/json",
+//   },
+// },

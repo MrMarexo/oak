@@ -8,7 +8,7 @@ export const ColoredSymbol = ({
   value: string;
 }) => {
   if (color === "Black") {
-    return <div className="text-gray-900">{value}</div>;
+    return <span className="text-gray-900">{value}</span>;
   }
-  return <div className="text-red-900">{value}</div>;
+  return <span className="text-red-900">{value}</span>;
 };
