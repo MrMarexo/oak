@@ -13,6 +13,7 @@ import { ReactNode, useState } from "react";
 export const DrawerComponent = ({
   toggleChild,
   title,
+  toggleId,
   // onSelectJokerAlternative,
   // jokerColor,
   children,
@@ -20,6 +21,7 @@ export const DrawerComponent = ({
 }: {
   toggleChild: ReactNode;
   title: string;
+  toggleId: string;
   // onSelectJokerAlternative: (alternative: CurrencyCard) => void;
   // jokerColor: CurrencyCard["color"];
   children: ReactNode;
@@ -33,7 +35,9 @@ export const DrawerComponent = ({
   };
   return (
     <Drawer>
-      <DrawerTrigger onClick={handleTrigger}>{toggleChild}</DrawerTrigger>
+      <DrawerTrigger id={toggleId} onClick={handleTrigger}>
+        {toggleChild}
+      </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader>
           <DrawerTitle>{title}</DrawerTitle>

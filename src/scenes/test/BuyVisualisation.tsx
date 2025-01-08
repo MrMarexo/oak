@@ -190,6 +190,17 @@ export const BuyVisualisation = ({
   };
 
   useEffect(() => {
+    selectedCards = selectedCards.map((card) => {
+      if (card.jokerAlternative) {
+        const newCard = card.jokerAlternative;
+        newCard.jokerCard = card;
+        newCard.id = newCard.id + "-joker-card-" + card.id;
+        return newCard;
+      }
+
+      return card;
+    });
+
     // adding
     if (previousSelectedCards.length < selectedCards.length) {
       if (!pickedCombinations.length) {
@@ -211,49 +222,63 @@ export const BuyVisualisation = ({
       return;
     }
 
-    // removing
-    if (previousSelectedCards.length > selectedCards.length) {
-      const removedCards = previousSelectedCards.filter(
-        (card) => !selectedCards.includes(card)
+    // if (selectedCards.length === previousSelectedCards.length) {
+    //   const differentCards = previousSelectedCards.filter(
+    //     (card) => !selectedCards.includes(card)
+    //   );
+
+    //   if (differentCards.length > 1) {
+    //     throw new Error("You can only add or remove one card at a time");
+    //   }
+
+    //   console.log("differentCards", differentCards);
+    // }
+
+    // // removing
+    // if (previousSelectedCards.length > selectedCards.length) {
+    const removedCards = previousSelectedCards.filter(
+      (card) => !selectedCards.includes(card)
+    );
+
+    let pickedFiltered: Combination[] = [];
+
+    setPickedCombinations((prev) => {
+      pickedFiltered = prev.filter(
+        (combination) =>
+          !removedCards.some((removedCard) =>
+            combination.cards.includes(removedCard)
+          )
       );
+      return pickedFiltered;
+    });
 
-      let pickedFiltered: Combination[] = [];
+    setAvailableCombinations((prev) =>
+      prev.filter(
+        (combination) =>
+          !removedCards.some((removedCard) =>
+            combination.cards.includes(removedCard)
+          )
+      )
+    );
 
-      setPickedCombinations((prev) => {
-        pickedFiltered = prev.filter(
-          (combination) =>
-            !removedCards.some((removedCard) =>
-              combination.cards.includes(removedCard)
-            )
-        );
-        return pickedFiltered;
-      });
-
-      setAvailableCombinations((prev) =>
-        prev.filter(
-          (combination) =>
-            !removedCards.some((removedCard) =>
-              combination.cards.includes(removedCard)
-            )
-        )
-      );
-
-      if (!pickedFiltered.length) {
-        setCards(selectedCards);
-        setPreviousSelectedCards(selectedCards);
-        return;
-      }
-
-      const pickedCards = pickedFiltered
-        .map((combination) => {
-          return combination.cards;
-        })
-        .flat();
-
-      setCards(selectedCards.filter((card) => !pickedCards.includes(card)));
-
+    if (!pickedFiltered.length) {
+      setCards(selectedCards);
       setPreviousSelectedCards(selectedCards);
+      return;
     }
+
+    const pickedCards = pickedFiltered
+      .map((combination) => {
+        return combination.cards;
+      })
+      .flat();
+
+    setCards(selectedCards.filter((card) => !pickedCards.includes(card)));
+
+    setPreviousSelectedCards(selectedCards);
+    // }
+
+    // console.log("NOT DOING SHIT");
   }, [selectedCards]);
 
   useEffect(() => {

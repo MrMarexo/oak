@@ -3,7 +3,6 @@ import {
   AnyCard,
   CardSuit,
   CurrencyCard,
-  JokerAlternative,
   SuitCurrencyGroups,
 } from "./types/game.types";
 
@@ -94,10 +93,7 @@ export const orderCurrencyCards = (cards: CurrencyCard[], order: string[]) => {
   return ordered;
 };
 
-export const getSuitCurrencyGroups = (
-  cards: CurrencyCard[],
-  jokerAlternatives?: JokerAlternative[]
-) => {
+export const getSuitCurrencyGroups = (cards: CurrencyCard[]) => {
   const groups: SuitCurrencyGroups = {
     Heart: [],
     Diamond: [],
@@ -106,20 +102,6 @@ export const getSuitCurrencyGroups = (
   };
 
   cards.forEach((card) => {
-    if (card.type === JOKER_TYPE) {
-      if (!jokerAlternatives || !jokerAlternatives.length) {
-        return;
-      }
-      const alternative = jokerAlternatives.find(
-        (alt) => alt.jokerCard.id === card.id
-      );
-      if (alternative && alternative.alternativeCard.suit) {
-        groups[alternative.alternativeCard.suit].push(
-          alternative.alternativeCard
-        );
-        return;
-      }
-    }
     if (card.suit) {
       groups[card.suit].push(card);
     }

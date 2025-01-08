@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  CharacterCard,
-  CurrencyCard,
-  JokerAlternative,
-  Players,
-  SuitCurrencyGroups,
-} from "@/types/game.types";
+import { CharacterCard, CurrencyCard, Players } from "@/types/game.types";
 import { SortableItem } from "../sort/SortableItem";
 
 import {
@@ -31,8 +25,7 @@ import { IconJokerAction } from "../icons/IconJokerAction";
 import { Card } from "./Card";
 import { SelectFromCards } from "./SelectFromCards";
 import { JOKER_TYPE } from "@/consts";
-import { calculateStraights, sortCardsByValue } from "@/helpers";
-import { getSuitCurrencyGroups } from "../../../helpers";
+
 import { BuyVisualisation } from "@/scenes/test/BuyVisualisation";
 
 export const Dealer = ({
@@ -50,7 +43,7 @@ export const Dealer = ({
 
   // setAvailableCharacters: (characters: CharacterCard[]) => void;
 }) => {
-  const [selectedCurrencyTotal, setSelectedCurrencyTotal] = useState(0);
+  const [waitingForJokerIds, setWaitingForJokerIds] = useState<string[]>([]);
 
   const [isSelectingCardsToBuy, setIsSelectingCardsToBuy] = useState(false);
   const [selectedCurrencyCards, setSelectedCurrencyCards] = useState<
@@ -58,10 +51,6 @@ export const Dealer = ({
   >([]);
   const [orderedHand, setOrderedHand] =
     useState<CurrencyCard[]>(currencyCardsInHand);
-
-  const [jokerAlternatives, setJokerAlternatives] = useState<
-    JokerAlternative[]
-  >([]);
 
   useEffect(() => {
     if (currencyCardsInHand.length > orderedHand.length) {
@@ -80,68 +69,43 @@ export const Dealer = ({
     saveCardOrder(orderedHand.map((card) => card.id));
   }, [currencyCardsInHand, orderedHand]);
 
-  useEffect(() => {
-    let total = 0;
-    const buyingCards: SuitCurrencyGroups = {
-      Heart: [],
-      Diamond: [],
-      Club: [],
-      Spade: [],
-    };
-    currencyCardsInHand.forEach((card) => {
-      if (card.type === JOKER_TYPE) {
-        const alternative = jokerAlternatives.find(
-          (alt) => alt.jokerCard.id === card.id
-        );
-        if (alternative && alternative.alternativeCard.suit) {
-          buyingCards[alternative.alternativeCard.suit].push(
-            alternative.alternativeCard
-          );
-          return;
-        }
-      }
-      if (card.suit) {
-        buyingCards[card.suit].push(card);
-      }
-    });
-
-    Object.entries(buyingCards).forEach(([suit, cards]) => {
-      const sortedCards = sortCardsByValue(cards);
-
-      const straights = calculateStraights(getSuitCurrencyGroups(sortedCards));
-      console.log(`straights ${suit}`, straights);
-    });
-
-    setSelectedCurrencyTotal(total);
-  }, [currencyCardsInHand, jokerAlternatives]);
-
   const handleJokerAlternative = (
     jokerCard: CurrencyCard,
     alternativeCard: CurrencyCard | null
   ) => {
-    if (!alternativeCard) {
-      setJokerAlternatives((prev) =>
-        prev.filter((alternative) => alternative.jokerCard.id !== jokerCard.id)
-      );
+    if (!alternativeCard && currencyCardsInHand.includes(jokerCard)) {
+      // If the joker card is in the hand cant be null - later add to the drawer
+
       return;
     }
 
-    const foundJoker = jokerAlternatives.find(
-      (alt) => alt.jokerCard.id === jokerCard.id
-    );
-    if (foundJoker) {
-      setJokerAlternatives((prev) =>
-        prev.map((alternative) => {
-          if (alternative.jokerCard.id === jokerCard.id) {
-            return { jokerCard, alternativeCard };
-          }
-          return alternative;
-        })
-      );
-      return;
+    if (waitingForJokerIds.includes(jokerCard.id)) {
+      setWaitingForJokerIds((prev) => prev.filter((id) => id !== jokerCard.id));
+      handleToggleSelected(jokerCard);
     }
+    setOrderedHand((prev) => {
+      const cards = prev.map((card) => {
+        if (card.id === jokerCard.id) {
+          card["jokerAlternative"] = alternativeCard ?? undefined;
+          return card;
+        }
+        return card;
+      });
 
-    setJokerAlternatives((prev) => [...prev, { jokerCard, alternativeCard }]);
+      return cards;
+    });
+
+    setSelectedCurrencyCards((prev) => {
+      const cards = prev.map((card) => {
+        if (card.id === jokerCard.id) {
+          card["jokerAlternative"] = alternativeCard ?? undefined;
+          return card;
+        }
+        return card;
+      });
+
+      return cards;
+    });
   };
 
   const handleDragEnd = (event: DragOverEvent) => {
@@ -162,11 +126,25 @@ export const Dealer = ({
     }
   };
 
-  const handleToggleSelected = (card: CurrencyCard) => {
+  const handleToggleSelected = (
+    card: CurrencyCard,
+    drawerToggleId?: string
+  ) => {
     if (selectedCurrencyCards.includes(card)) {
       setSelectedCurrencyCards((prev) =>
         prev.filter((curCard) => curCard.id !== card.id)
       );
+      return;
+    }
+
+    if (card.type === JOKER_TYPE && drawerToggleId && !card.jokerAlternative) {
+      document.getElementById(drawerToggleId)?.click();
+      setWaitingForJokerIds((prev) => {
+        if (prev.includes(card.id)) {
+          return prev;
+        }
+        return [...prev, card.id];
+      });
       return;
     }
 
@@ -232,15 +210,10 @@ export const Dealer = ({
               items={orderedHand}
               strategy={verticalListSortingStrategy}
             >
-              <div className="flex gap-3 flex-wrap">
+              <div className="flex gap-3 flex-wrap items-end">
                 {orderedHand.map((card) => {
-                  const jokerAlternative =
-                    card.type === JOKER_TYPE
-                      ? jokerAlternatives.find(
-                          (alt) => alt.jokerCard.id === card.id
-                        )
-                      : null;
                   const isJoker = card.type === JOKER_TYPE;
+                  const toggleId = "toggle-" + card.id;
 
                   if (isSelectingCardsToBuy) {
                     return (
@@ -248,15 +221,9 @@ export const Dealer = ({
                         className="flex flex-col items-center gap-1"
                         key={card.id}
                       >
-                        <button onClick={() => handleToggleSelected(card)}>
-                          <Card
-                            card={card}
-                            isSelected={selectedCurrencyCards.includes(card)}
-                            jokerAlternative={jokerAlternative?.alternativeCard}
-                          />
-                        </button>
                         {isJoker && (
                           <DrawerComponent
+                            toggleId={toggleId}
                             toggleChild={
                               <div className="px-1 border rounded-md hover:border-black">
                                 <IconJokerAction height="20px" width="20px" />
@@ -272,6 +239,14 @@ export const Dealer = ({
                             />
                           </DrawerComponent>
                         )}
+                        <button
+                          onClick={() => handleToggleSelected(card, toggleId)}
+                        >
+                          <Card
+                            card={card}
+                            isSelected={selectedCurrencyCards.includes(card)}
+                          />
+                        </button>
                       </div>
                     );
                   }
@@ -281,9 +256,9 @@ export const Dealer = ({
                         className="flex flex-col items-center gap-1"
                         key={card.id + "sortable"}
                       >
+                        <div className="w-[30px] h-[22px]"></div>
                         <Card
                           card={card}
-                          jokerAlternative={jokerAlternative?.alternativeCard}
                           isSelected={selectedCurrencyCards.includes(card)}
                         />
                       </div>

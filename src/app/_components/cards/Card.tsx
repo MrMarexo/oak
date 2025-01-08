@@ -9,17 +9,25 @@ export const Card = ({
   isDiscard,
   size = "lg",
   isSelected,
-  jokerAlternative,
 }: {
   card?: AnyCard;
   isDiscard?: boolean;
   size?: "sm" | "lg";
   isSelected?: boolean;
-  jokerAlternative?: CurrencyCard;
 }) => {
+  let jokerAlternative = (card as CurrencyCard)?.jokerAlternative;
+  let isJoker = false;
+
+  const jokerCard = (card as CurrencyCard)?.jokerCard;
+  if (jokerCard && jokerCard?.type === JOKER_TYPE) {
+    isJoker = true;
+  }
+
   if (jokerAlternative && card?.type === JOKER_TYPE) {
     card = jokerAlternative;
+    isJoker = true;
   }
+
   return (
     <div
       className={`${size === "sm" ? "h-20 w-14" : "h-28 w-20"} border-[1px] flex rounded-md flex-col justify-center items-center border-foreground bg-background relative ${isSelected ? "shadow-card-lg" : "shadow-card-sm"}`}
@@ -38,7 +46,7 @@ export const Card = ({
           ) : (
             <>
               <div
-                className={`${size === "sm" ? "text-md" : "text-lg"} font-bold ${jokerAlternative ? "opacity-30" : "opacity-100"}`}
+                className={`${size === "sm" ? "text-md" : "text-lg"} font-bold ${isJoker ? "opacity-30" : "opacity-100"}`}
               >
                 <ColoredSymbol
                   color={card.color}
@@ -46,7 +54,7 @@ export const Card = ({
                 />
               </div>
               <div
-                className={`${size === "sm" ? "text-3xl" : "text-5xl"} ${jokerAlternative ? "opacity-30" : "opacity-100"} `}
+                className={`${size === "sm" ? "text-3xl" : "text-5xl"} ${isJoker ? "opacity-30" : "opacity-100"} `}
               >
                 <ColoredSymbol
                   color={card.color}

@@ -2,11 +2,6 @@ import { $Enums, Prisma } from "@prisma/client";
 
 export type SuitCurrencyGroups = Record<$Enums.CardSuit, CurrencyCard[]>;
 
-export type JokerAlternative = {
-  jokerCard: CurrencyCard;
-  alternativeCard: CurrencyCard;
-};
-
 export type CardSuit = keyof SuitCurrencyGroups;
 
 export type PlayerName = Prisma.PlayerGetPayload<{
@@ -112,5 +107,8 @@ export type Players = Game["players"];
 
 export type CharacterCard = Game["characterCardsAvailable"][number];
 export type AceCard = Game["aceCardsAvailable"][number];
-export type CurrencyCard = PlayerStatePrivate["currencyCardsInHand"][number];
+export type CurrencyCard = PlayerStatePrivate["currencyCardsInHand"][number] & {
+  jokerAlternative?: CurrencyCard;
+  jokerCard?: CurrencyCard;
+};
 export type AnyCard = CharacterCard | AceCard | CurrencyCard;
